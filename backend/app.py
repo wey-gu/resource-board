@@ -1,6 +1,8 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-
+from flask_socketio import SocketIO
+from flask_socketio import send, emit
+import json
 
 # configuration
 DEBUG = True
@@ -8,16 +10,132 @@ DEBUG = True
 # instantiate the app
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
 
 # enable CORS
 CORS(app)
 
+mock_resources = '''
+[
+  {
+    "name":"DC209",
+    "scale":7,
+    "show":false,
+    "note":"",
+    "high_availability":true,
+    "storage_backend":"SIO",
+    "hardware_type":"HP",
+    "last_changed_at":"2019-01-20",
+    "last_changed_by":"Jenkins",
+    "used_by":"Jenkins",
+    "state":"ci"
+  },
+  {
+    "name":"DC214",
+    "scale":9,
+    "show":false,
+    "note":"",
+    "high_availability":true,
+    "storage_backend":"SIO",
+    "hardware_type":"DELL",
+    "last_changed_at":"2019-02-20",
+    "last_changed_by":"Jenkins",
+    "used_by":"Jenkins",
+    "state":"ci"
+  },
+  {
+    "name":"DC205",
+    "scale":5,
+    "show":false,
+    "note":"",
+    "high_availability":true,
+    "storage_backend":"LVM",
+    "hardware_type":"DELL",
+    "last_changed_at":"2019-01-20",
+    "last_changed_by":"Foo Bar",
+    "used_by":"Foo Bar",
+    "state":"occupied"
+  },
+  {
+    "name":"DC223",
+    "scale":1,
+    "show":false,
+    "note":"",
+    "high_availability":false,
+    "storage_backend":"",
+    "hardware_type":"DELL",
+    "last_changed_at":"2019-01-23",
+    "last_changed_by":"Foo Bar",
+    "used_by":"",
+    "state":"free"
+  },
+  {
+    "name":"DC127",
+    "scale":12,
+    "show":false,
+    "note":"",
+    "high_availability":true,
+    "storage_backend":"SIO",
+    "hardware_type":"DELL",
+    "last_changed_at":"2019-01-20",
+    "last_changed_by":"Foo Bar",
+    "used_by":"Foo Bar",
+    "state":"testing"
+  },
+  {
+    "name":"DC188",
+    "scale":6,
+    "show":false,
+    "note":"",
+    "high_availability":true,
+    "storage_backend":"",
+    "hardware_type":"DELL",
+    "last_changed_at":"2019-01-23",
+    "last_changed_by":"Foo Bar",
+    "used_by":"",
+    "state":"free"
+  },
+  {
+    "name":"DC154",
+    "scale":16,
+    "show":false,
+    "note":"",
+    "high_availability":true,
+    "storage_backend":"",
+    "hardware_type":"DELL",
+    "last_changed_at":"2019-01-23",
+    "last_changed_by":"Foo Bar",
+    "used_by":"",
+    "state":"ci"
+  }
+]
+'''
+db_mock_resources = json.loads(mock_resources)
+db_index_hash = {}
+for index, item in enumerate(db_mock_resources):
+    db_index_hash[item['name']] = index
 
-# sanity check route
-@app.route('/ping', methods=['GET'])
-def ping_pong():
-    return jsonify('pong!')
+
+# http server handle requests as below
+@app.route('/resources', methods=['GET'])
+def fetch_resources():
+    """ get all resources """
+    return jsonify(mock_resources)
+
+# socketio server handle events as below
+@socketio.on('up resource')
+def update_resource_server(res):
+    _res = db_mock_resources[db_index_hash[res['name']]]
+    _res['used_by'], _res['state'] = res['used_by'], res['state']
+    emit('toldresource', (json.dumps(_res)))
+
+
+@socketio.on('ping')
+def pongResponse():
+    print("pong")
+    emit('pong')
 
 
 if __name__ == '__main__':
-    app.run()
+    socketio.run(app)
