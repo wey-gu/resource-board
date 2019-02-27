@@ -6,47 +6,40 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    loadedResources: null,
+    resources: [],
     loading: false,
-    error: null,
-    mock_states_stype: [
-      {
-        'ci': 'primary',
-      },
-      {
-        'free': 'success',
-      },
-      {
-        'occupied': 'error',
-      },
-      {
-        'testing': 'warning',
-      }
-    ],
+    error: false,
   },
   getters: {
+    getResByName: (state) => (name) =>{
+      return state.resources(res => res.name === name)
+    },
     loadedBoard: (state) => {
       let board = {}
       // eslint-disable-next-line
-      // console.log(state.loadedResources[0])
-      if (state.loadedResources !== null) {
-        for (let resource of state.loadedResources ) {
+      // console.log(state.resources[0])
+      if (state.resources !== null) {
+        for (let resource of state.resources ) {
           // eslint-disable-next-line
-          // console.log(resource.show)
-          let RS = resource.state
-          if (RS in board) {
-            board[RS].push(resource)
+          console.log(resource['show_details'])
+          // init of local attr
+          if (resource['show_details'] === undefined) {
+            Vue.set(resource, 'show_details', false)
+            Vue.set(resource, 'edit_dialog', false)
+          }
+          let resState = resource.state
+          if (resState in board) {
+            board[resState].push(resource)
           } else {
-            board[RS] = [resource]
+            board[resState] = [resource]
           }
         }
         // eslint-disable-next-line
-        // console.log(board)
+        console.log(board)
         return board
       } else {
         return null
       }
-
     },
     getLoading: (state) => {
       return state.loading
@@ -54,40 +47,43 @@ export default new Vuex.Store({
   },
   mutations: {
     setResources (state, payload) {
-      state.loadedResources = JSON.parse(payload)
+      let newlength = 1
+      for (let resource of JSON.parse(payload) ) {
+        state.resources.splice(newlength)
+        state.resources.splice(newlength - 1, 1, resource)
+        newlength++
+      }
       // eslint-disable-next-line
-      // let test = state.loadedResources
+      // let test = state.resources
       // eslint-disable-next-line
-      // console.log(state.loadedResources)
+      // console.log(state.resources)
     },
     updateResource (state, payload) {
+      // eslint-disable-next-line
+      console.log('updateResource: ' + payload)
       let updated_resource = JSON.parse(payload)
-      for (let [index, resource] of state.loadedResources.entries() ) {
+      for (let [index, resource] of state.resources.entries() ) {
         if (resource.name === updated_resource.name) {
-          state.loadedResources[index] = updated_resource
+          // eslint-disable-next-line
+          console.log('before mutation:' + state.resources[index].state)
+          //state.resources[index] = updated_resource
+          state.resources.splice(index, 1, updated_resource)
+          // eslint-disable-next-line
+          console.log('after: mutation:' + state.resources[index].state)
         }
       }
       // eslint-disable-next-line
-      // console.log(state.loadedResources)
+      // console.log(state.resources)
     },
     changeLoadingState (state, ifLoading) {
       state.loading = ifLoading
     },
-    changeShowState (state, resourceName) {
-      for (let [index, resource] of state.loadedResources.entries() ) {
-        if (resource.name === resourceName) {
-          state.loadedResources[index] = !resource.show
-          // eslint-disable-next-line
-          // console.log(index)
-        }
-      }
-    }
   },
   actions: {
     // eslint-disable-next-line
-    SOCKET_toldresource ({commit}, params) {
+    SOCKET_updateResource ({commit}, params) {
       // eslint-disable-next-line
-      console.log(params)
+      console.log('SOCKET_updateResource: ' + params)
       // update_board from socket.io server
       commit('updateResource', params)
     },

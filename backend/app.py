@@ -21,7 +21,6 @@ mock_resources = '''
   {
     "name":"DC209",
     "scale":7,
-    "show":false,
     "note":"",
     "high_availability":true,
     "storage_backend":"SIO",
@@ -34,7 +33,6 @@ mock_resources = '''
   {
     "name":"DC214",
     "scale":9,
-    "show":false,
     "note":"",
     "high_availability":true,
     "storage_backend":"SIO",
@@ -47,7 +45,6 @@ mock_resources = '''
   {
     "name":"DC205",
     "scale":5,
-    "show":false,
     "note":"",
     "high_availability":true,
     "storage_backend":"LVM",
@@ -60,7 +57,6 @@ mock_resources = '''
   {
     "name":"DC223",
     "scale":1,
-    "show":false,
     "note":"",
     "high_availability":false,
     "storage_backend":"",
@@ -73,7 +69,6 @@ mock_resources = '''
   {
     "name":"DC127",
     "scale":12,
-    "show":false,
     "note":"",
     "high_availability":true,
     "storage_backend":"SIO",
@@ -86,7 +81,6 @@ mock_resources = '''
   {
     "name":"DC188",
     "scale":6,
-    "show":false,
     "note":"",
     "high_availability":true,
     "storage_backend":"",
@@ -99,7 +93,6 @@ mock_resources = '''
   {
     "name":"DC154",
     "scale":16,
-    "show":false,
     "note":"",
     "high_availability":true,
     "storage_backend":"",
@@ -121,20 +114,15 @@ for index, item in enumerate(db_mock_resources):
 @app.route('/resources', methods=['GET'])
 def fetch_resources():
     """ get all resources """
-    return jsonify(mock_resources)
+    return jsonify(json.dumps(db_mock_resources))
 
 # socketio server handle events as below
-@socketio.on('up resource')
+@socketio.on('update resource')
 def update_resource_server(res):
     _res = db_mock_resources[db_index_hash[res['name']]]
     _res['used_by'], _res['state'] = res['used_by'], res['state']
-    emit('toldresource', (json.dumps(_res)))
-
-
-@socketio.on('ping')
-def pongResponse():
-    print("pong")
-    emit('pong')
+    # print(str(_res))
+    emit('updateResource', (json.dumps(_res)), broadcast=True)
 
 
 if __name__ == '__main__':

@@ -46,13 +46,13 @@
 
                 <v-card-actions>
 
-                    <v-dialog v-model="resEditDialog" persistent max-width="600px">
-                      <v-btn slot="activator" flat>Edit</v-btn>
-                      <v-card>
+                    <v-dialog v-model="resource.edit_dialog" :key="resource.name + 'editDialog'" persistent max-width="600px">
+                      <v-btn slot="activator" :key="resource.name + 'editDialogBtn'" flat>Edit</v-btn>
+                      <v-card :key="resource.name + 'editDialogCard'" >
                         <v-card-title>
                           <span class="headline secondary--text font-weight-light">Edit</span>
                           <v-spacer></v-spacer>
-                          <span class="headline ">{{ resource.name }}</span>
+                          <span class="headline " :key="resource.name + 'editDialogTitle'" >{{ resource.name }}</span>
                         </v-card-title>
                         <v-card-text>
                           <v-container grid-list-md>
@@ -62,9 +62,10 @@
                                   v-model.trim="usedBy"
                                   label="Name of New User*"
                                   required
-                                  hint="from now on"
+                                  hint="who will occupy it from now on."
                                   persistent-hint
                                   prepend-icon="face"
+                                  :key="resource.name + 'usedBy'"
                                 ></v-text-field>
                               </v-flex>
                               <v-flex xs12>
@@ -77,6 +78,7 @@
                                   prepend-icon="info"
                                   single-line
                                   required
+                                  :key="resource.name + 'newState'"
                                 ></v-select>
                               </v-flex>
                             </v-layout>
@@ -87,12 +89,13 @@
                         </v-card-text>
                         <v-card-actions>
                           <v-spacer></v-spacer>
-                          <v-btn color="blue darken-1" flat @click="resEditDialog = false">Cancel</v-btn>
+                          <v-btn color="blue darken-1" flat @click="resource.edit_dialog = false">Cancel</v-btn>
                           <v-btn
                             color="blue darken-1"
                             flat
                             :loading="loadingDialog"
                             @click="commitResEdit(resource.name)"
+                            :key="resource.name + 'editDialogCommitBtn'"
                           >
                             Commit
                           </v-btn>
@@ -103,13 +106,13 @@
 
                   <v-btn flat class="accent--text ">History</v-btn>
                   <v-spacer></v-spacer>
-                  <v-btn icon @click="resource.show = (resource.show === undefined) ? true : (!resource.show)">
-                    <v-icon v-if="resource.show" >keyboard_arrow_down</v-icon>
-                    <v-icon v-if="!resource.show" >keyboard_arrow_up</v-icon>
+                  <v-btn icon @click="resource.show_details = !resource.show_details">
+                    <v-icon v-if="resource.show_details" >keyboard_arrow_down</v-icon>
+                    <v-icon v-if="!resource.show_details" >keyboard_arrow_up</v-icon>
                   </v-btn>
                 </v-card-actions>
                 <v-slide-y-transition>
-                  <v-card-text class="font-weight-light" v-show="resource.show">
+                  <v-card-text class="font-weight-light" v-show="resource.show_details">
 
                     <span class="secondary--text font-weight-light">Changed by:</span>
                     <span class="primary--text ">
@@ -136,7 +139,7 @@
 </template>
 
 <script>
-  import { mapGetters, mapActions, mapMutations } from 'vuex'
+  import { mapGetters, mapActions, mapMutations, mapState } from 'vuex'
 
   export default {
     data: () => ({
@@ -146,7 +149,6 @@
         'occupied': 'error',
         'testing': 'warning',
       },
-      resEditDialog: false,
       loadingDialog: false,
       usedBy: '',
       newState: ''
@@ -155,19 +157,26 @@
       loadingDialog (val) {
         if (!val) return
         setTimeout(() => (this.loadingDialog = false), 4000)
-        this.loadedBoard
-      }
+        // this.loadedBoard
+      },
+      //loadedBoard(oldValue, newValue) {
+      //  console.log('old value: ' + oldValue)
+      //  console.log('new value: ' + newValue)
+      //}
     },
     computed: {
       // `this.loadedBoard()` as `this.$store.getters('loadedBoard')`
+      ...mapState([
+        'data',
+      ]),
       ...mapGetters([
         'loadedBoard',
         'getLoading'
       ]),
       ...mapMutations([
         'changeShowState',
-        'changeLoadingState'
-      ])
+        'changeDialogState',
+      ]),
     },
     created () {
       // this.getBoard()
@@ -181,8 +190,7 @@
           "used_by": this.usedBy,
           "state": this.newState
         }
-        this.$socket.emit('up resource', params)
-        this.changeLoadingState
+        this.$socket.emit('update resource', params)
       }
     }
   }
