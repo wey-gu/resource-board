@@ -1,12 +1,15 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from flask_socketio import send, emit
+from flask_socketio import emit
+from mock_data import db_mock_resources, db_index_hash, \
+  db_mock_resource_history
 import json
+import datetime
 
 # configuration
 DEBUG = True
-
+HISTORY_ENTRIES_MAX = 50
 # instantiate the app
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -16,99 +19,6 @@ socketio = SocketIO(app)
 # enable CORS
 CORS(app)
 
-mock_resources = '''
-[
-  {
-    "name":"DC209",
-    "scale":7,
-    "note":"",
-    "high_availability":true,
-    "storage_backend":"SIO",
-    "hardware_type":"HP",
-    "last_changed_at":"2019-01-20",
-    "last_changed_by":"Jenkins",
-    "used_by":"Jenkins",
-    "state":"ci"
-  },
-  {
-    "name":"DC214",
-    "scale":9,
-    "note":"",
-    "high_availability":true,
-    "storage_backend":"SIO",
-    "hardware_type":"DELL",
-    "last_changed_at":"2019-02-20",
-    "last_changed_by":"Jenkins",
-    "used_by":"Jenkins",
-    "state":"ci"
-  },
-  {
-    "name":"DC205",
-    "scale":5,
-    "note":"",
-    "high_availability":true,
-    "storage_backend":"LVM",
-    "hardware_type":"DELL",
-    "last_changed_at":"2019-01-20",
-    "last_changed_by":"Foo Bar",
-    "used_by":"Foo Bar",
-    "state":"occupied"
-  },
-  {
-    "name":"DC223",
-    "scale":1,
-    "note":"",
-    "high_availability":false,
-    "storage_backend":"",
-    "hardware_type":"DELL",
-    "last_changed_at":"2019-01-23",
-    "last_changed_by":"Foo Bar",
-    "used_by":"",
-    "state":"free"
-  },
-  {
-    "name":"DC127",
-    "scale":12,
-    "note":"",
-    "high_availability":true,
-    "storage_backend":"SIO",
-    "hardware_type":"DELL",
-    "last_changed_at":"2019-01-20",
-    "last_changed_by":"Foo Bar",
-    "used_by":"Foo Bar",
-    "state":"testing"
-  },
-  {
-    "name":"DC188",
-    "scale":6,
-    "note":"",
-    "high_availability":true,
-    "storage_backend":"",
-    "hardware_type":"DELL",
-    "last_changed_at":"2019-01-23",
-    "last_changed_by":"Foo Bar",
-    "used_by":"",
-    "state":"free"
-  },
-  {
-    "name":"DC154",
-    "scale":16,
-    "note":"",
-    "high_availability":true,
-    "storage_backend":"",
-    "hardware_type":"DELL",
-    "last_changed_at":"2019-01-23",
-    "last_changed_by":"Foo Bar",
-    "used_by":"",
-    "state":"ci"
-  }
-]
-'''
-db_mock_resources = json.loads(mock_resources)
-db_index_hash = {}
-for index, item in enumerate(db_mock_resources):
-    db_index_hash[item['name']] = index
-
 
 # http server handle requests as below
 @app.route('/resources', methods=['GET'])
@@ -116,13 +26,40 @@ def fetch_resources():
     """ get all resources """
     return jsonify(json.dumps(db_mock_resources))
 
+
+@app.route('/resource/<name>/history', methods=['GET'])
+def fetch_resource_history(name):
+    """ get resource history """
+    # maximum history query legnth is HISTORY_ENTRIES_MAX
+    history = db_mock_resource_history.get(name, [])[-HISTORY_ENTRIES_MAX:]
+    return jsonify(json.dumps({name: history}))
+
+
 # socketio server handle events as below
 @socketio.on('update resource')
 def update_resource_server(res):
-    _res = db_mock_resources[db_index_hash[res['name']]]
-    _res['used_by'], _res['state'] = res['used_by'], res['state']
-    # print(str(_res))
-    emit('updateResource', (json.dumps(_res)), broadcast=True)
+    # factors to be recorded
+    factors = [
+        'used_by',
+        'state',
+        'note'
+    ]
+    timestamp_factor = 'last_changed_at'
+    # including timestamp
+    record_factors = factors + [timestamp_factor]
+    db_res = db_mock_resources[db_index_hash[res['name']]]
+    # for any changes, update and record in history
+    if any(db_res[factor] != res[factor] for factor in factors):
+        for factor in factors:
+            db_res[factor] = res[factor]
+        timestamp = datetime.datetime.utcnow().__str__()
+        # update database resource
+        db_res[timestamp_factor] = timestamp
+        db_mock_resource_history[res['name']].append(
+            {factor: db_res[factor] for factor in record_factors}
+        )
+    # print(str(db_res))
+    emit('updateResource', (json.dumps(db_res)), broadcast=True)
 
 
 if __name__ == '__main__':

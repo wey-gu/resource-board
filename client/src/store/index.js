@@ -9,6 +9,7 @@ export default new Vuex.Store({
     resources: [],
     loading: false,
     error: false,
+    histories: null,
   },
   getters: {
     getResByName: (state) => (name) =>{
@@ -21,7 +22,7 @@ export default new Vuex.Store({
       if (state.resources !== null) {
         for (let resource of state.resources ) {
           // eslint-disable-next-line
-          console.log(resource['show_details'])
+          // console.log(resource['show_details'])
           // init of local attr
           if (resource['show_details'] === undefined) {
             Vue.set(resource, 'show_details', false)
@@ -43,33 +44,35 @@ export default new Vuex.Store({
     },
     getLoading: (state) => {
       return state.loading
+    },
+    getHistoryByName: (state) => (name) =>{
+      return state.histories[name]
     }
   },
   mutations: {
     setResources (state, payload) {
-      let newlength = 1
-      for (let resource of JSON.parse(payload) ) {
-        state.resources.splice(newlength)
-        state.resources.splice(newlength - 1, 1, resource)
-        newlength++
-      }
-      // eslint-disable-next-line
-      // let test = state.resources
+      //someArray.splice(start, deleteCount, item1, item2, ...)
+      state.resources.splice(0, 0, ...JSON.parse(payload))
       // eslint-disable-next-line
       // console.log(state.resources)
     },
+    setHistory (state, payload) {
+      let parsedPayload = JSON.parse(payload)
+      let name = Object.keys(parsedPayload)[0]
+      Vue.set(state.histories, name, parsedPayload[name])
+    },
     updateResource (state, payload) {
       // eslint-disable-next-line
-      console.log('updateResource: ' + payload)
+      console.log('[DEBUG] updateResource: ' + payload)
       let updated_resource = JSON.parse(payload)
       for (let [index, resource] of state.resources.entries() ) {
         if (resource.name === updated_resource.name) {
           // eslint-disable-next-line
-          console.log('before mutation:' + state.resources[index].state)
+          console.log('[DEBUG] before mutation:' + state.resources[index].state)
           //state.resources[index] = updated_resource
           state.resources.splice(index, 1, updated_resource)
           // eslint-disable-next-line
-          console.log('after: mutation:' + state.resources[index].state)
+          console.log('[DEBUG] after: mutation:' + state.resources[index].state)
         }
       }
       // eslint-disable-next-line
