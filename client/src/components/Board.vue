@@ -28,8 +28,9 @@
                     <div>
                       <div class="headline">{{ resource.name }}</div>
                       <span class="secondary--text font-weight-light">Since:</span>
-                      <span class="primary--text ">
-                        {{ resource.last_changed_at }}</span><br>
+
+                      <span class="accent--text">
+                        {{ resource.last_changed_at | timeFormat }}</span><br>
                       <span class="secondary--text font-weight-light"
                       v-show="resource.used_by !== ''"
                       >
@@ -44,86 +45,117 @@
 
                   </v-card-title>
 
-                <v-card-actions>
+                  <v-card-actions>
 
-                    <v-dialog v-model="resource.edit_dialog" :key="resource.name + 'editDialog'" persistent max-width="600px">
-                      <v-btn slot="activator" :key="resource.name + 'editDialogBtn'" flat>Edit</v-btn>
-                      <v-card :key="resource.name + 'editDialogCard'" >
-                        <v-card-title>
-                          <span class="headline secondary--text font-weight-light">Edit</span>
-                          <v-spacer></v-spacer>
-                          <span class="headline " :key="resource.name + 'editDialogTitle'" >{{ resource.name }}</span>
-                        </v-card-title>
-                        <v-card-text>
-                          <v-container grid-list-md>
-                            <v-layout wrap>
-                              <v-flex xs12>
-                                <v-text-field
-                                  v-model.trim="usedBy"
-                                  label="Name of New User*"
-                                  required
-                                  hint="who will occupy it from now on."
-                                  persistent-hint
-                                  prepend-icon="face"
-                                  :key="resource.name + 'usedBy'"
-                                ></v-text-field>
-                              </v-flex>
-                              <v-flex xs12>
-                                <v-select
-                                  v-model="newState"
-                                  :items="['ci', 'free', 'occupied', 'testing']"
-                                  menu-props="auto"
-                                  label="New State*"
-                                  hide-details
-                                  prepend-icon="info"
-                                  single-line
-                                  required
-                                  :key="resource.name + 'newState'"
-                                ></v-select>
-                              </v-flex>
-                            </v-layout>
-                          </v-container>
-                          <!-- notice here
-                            <small>*indicates required field</small>
-                          --> 
-                        </v-card-text>
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn color="blue darken-1" flat @click="resource.edit_dialog = false">Cancel</v-btn>
-                          <v-btn
-                            color="blue darken-1"
-                            flat
-                            :loading="loadingDialog"
-                            @click="commitResEdit(resource.name)"
-                            :key="resource.name + 'editDialogCommitBtn'"
-                          >
-                            Commit
-                          </v-btn>
+                      <v-dialog v-model="resource.edit_dialog" persistent max-width="600px">
+                        <v-btn slot="activator" flat v-if="!resource.show_details" >Edit</v-btn>
+                        <v-card >
+                          <v-card-title>
+                            <span class="headline secondary--text font-weight-light">Edit</span>
+                            <v-spacer></v-spacer>
+                            <span class="headline ">{{ resource.name }}</span>
+                          </v-card-title>
+                          <v-card-text>
+                            <v-form v-model="valid">
+                              <v-container grid-list-md>
+                                <v-layout wrap>
+                                  <v-flex xs12>
+                                    <v-text-field
+                                      v-model.trim="usedBy"
+                                      label="Name of New User*"
+                                      required
+                                      :rules="nameRules"
+                                      hint="Name who will occupy it from now on."
+                                      persistent-hint
+                                      prepend-icon="face"
+                                    ></v-text-field>
+                                  </v-flex>
+                                  <v-flex xs12>
+                                    <v-select
+                                      v-model="newState"
+                                      :items="['ci', 'free', 'occupied', 'testing']"
+                                      menu-props="auto"
+                                      label="New State*"
+                                      hide-details
+                                      prepend-icon="info"
+                                      single-line
+                                      required
+                                      :rules="stateRules"
+                                      ba-2
+                                    ></v-select>
+                                  </v-flex>
+                                  <v-flex xs12>
+                                    <v-textarea
+                                      v-model="note"
+                                      prepend-icon="note"
+                                      hint="leave a note to the team"
+                                    ></v-textarea>
+                                  </v-flex>
 
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                                </v-layout>
+                              </v-container>
+                            <!-- notice here
+                              <small>*indicates required field</small>
+                            --> 
+                            </v-form>
+                          </v-card-text>
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="blue darken-1" flat @click="resource.edit_dialog = false">Cancel</v-btn>
+                            <v-btn
+                              color="blue darken-1"
+                              flat
+                              :loading="loadingDialog"
+                              @click="commitResEdit(resource.name)"
+                              :disabled="valid === false"
+                            >
+                              Commit
+                            </v-btn>
 
-                  <v-btn flat class="accent--text ">History</v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn icon @click="resource.show_details = !resource.show_details">
-                    <v-icon v-if="resource.show_details" >keyboard_arrow_down</v-icon>
-                    <v-icon v-if="!resource.show_details" >keyboard_arrow_up</v-icon>
-                  </v-btn>
-                </v-card-actions>
-                <v-slide-y-transition>
-                  <v-card-text class="font-weight-light" v-show="resource.show_details">
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
 
-                    <span class="secondary--text font-weight-light">Changed by:</span>
-                    <span class="primary--text ">
-                      {{ resource.last_changed_by }}</span><br>
+                    <v-btn
+                      flat
+                      :class="config_style[boardName]+'--text text--lighten-1'"
+                      :to="'/resource/' + resource.name +'/history'"
+                      v-if="!resource.show_details"
+                    >
+                      History
+                    </v-btn>
 
-                    <span class="secondary--text font-weight-light">Scale:</span>
-                    <span class="primary--text ">
-                      {{ resource.scale }}</span><br>
+                    <v-spacer></v-spacer>
+                    <v-btn icon @click="resource.show_details = !resource.show_details">
+                      <v-icon v-if="resource.show_details" >keyboard_arrow_down</v-icon>
+                      <v-icon v-if="!resource.show_details" >keyboard_arrow_up</v-icon>
+                    </v-btn>
+                  </v-card-actions>
+                  <v-slide-y-transition>
+                      <v-card-text class="font-weight-light" v-show="resource.show_details">
+                        <v-layout wrap>
+                          <v-flex xs12 ba-1>
+                            <span class="secondary--text font-weight-light">Changed by:</span>
+                            <span class="primary--text ">
+                              {{ resource.last_changed_by }}</span><br>
 
-                  </v-card-text>
-                </v-slide-y-transition>
+                            <span v-if="resource.note" class="secondary--text font-weight-light">Note:</span><br>
+                            <span v-if="resource.note" class="font-weight-thin">
+                              {{ resource.note }}
+                            </span>
+                          </v-flex>
+
+                          <v-flex xs12 pa-1>
+                            <v-chip color="purple lighten-1" text-color="white" class="font-weight-light" small >{{ resource['hardware_type'] }}</v-chip>
+                            <v-chip color="primary" text-color="white" class="font-weight-light" small >
+                              {{ resource['scale'] }} Servers
+                              <v-icon right small>dns</v-icon>
+                            </v-chip>
+                          </v-flex>
+                        </v-layout>
+                      </v-card-text>
+
+                  </v-slide-y-transition>
 
                 </v-card>
 
@@ -139,7 +171,7 @@
 </template>
 
 <script>
-  import { mapGetters, mapActions, mapMutations, mapState } from 'vuex'
+  import { mapGetters, mapMutations } from 'vuex'
 
   export default {
     data: () => ({
@@ -150,25 +182,23 @@
         'testing': 'warning',
       },
       loadingDialog: false,
-      usedBy: '',
-      newState: ''
+      valid: false,
+      nameRules: [
+        v => !!v || 'Newly used-by name is required',
+        v => v.length <= 25 || 'Name must be less than 25 characters'
+      ],
+      stateRules: [
+        v => !!v || 'New state is required',
+      ]
     }),
     watch: {
       loadingDialog (val) {
         if (!val) return
         setTimeout(() => (this.loadingDialog = false), 4000)
-        // this.loadedBoard
       },
-      //loadedBoard(oldValue, newValue) {
-      //  console.log('old value: ' + oldValue)
-      //  console.log('new value: ' + newValue)
-      //}
     },
     computed: {
       // `this.loadedBoard()` as `this.$store.getters('loadedBoard')`
-      ...mapState([
-        'data',
-      ]),
       ...mapGetters([
         'loadedBoard',
         'getLoading'
@@ -179,7 +209,7 @@
       ]),
     },
     created () {
-      // this.getBoard()
+      // cannot use mappAction this.getBoard() here
       this.$store.dispatch('getBoard')
     },
     methods: {
@@ -188,7 +218,8 @@
         let params = {
           "name": resName,
           "used_by": this.usedBy,
-          "state": this.newState
+          "state": this.newState,
+          "note": this.note,
         }
         this.$socket.emit('update resource', params)
       }

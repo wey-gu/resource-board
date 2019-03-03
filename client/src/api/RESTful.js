@@ -13,7 +13,7 @@ export default {
         })
     },
     getHistory (resName, commitCallback) {
-      const URL = 'http://localhost:5000/resource/' + resName + 'history'
+      const URL = 'http://localhost:5000/resource/' + resName + '/history'
       axios.get(URL)
         .then((response) => {
           commitCallback('setHistory', response.data)

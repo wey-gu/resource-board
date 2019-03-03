@@ -1,10 +1,15 @@
 <template>
   <v-app>
     <v-toolbar app color="BLACK" dark>
-      <v-toolbar-title class="headline text-uppercase">
-        <span class="font-weight-light">Resourse</span>
-        <span>Board</span>
-      </v-toolbar-title>
+      <div>
+      <v-btn flat color="WHITE" to="/" class="shadow-none">
+        <v-toolbar-title class="headline text-uppercase">
+          <span class="font-weight-light">
+            resourse</span><span>board
+          </span>
+        </v-toolbar-title>
+      </v-btn>
+      </div>
       <v-spacer></v-spacer>
       <v-btn
         flat
@@ -14,18 +19,20 @@
     </v-toolbar>
 
     <v-content>
-      <Board/>
+      <keep-alive>
+        <transition>
+          <router-view></router-view>
+        </transition>
+      </keep-alive>
     </v-content>
   </v-app>
 </template>
 
 <script>
-import Board from './components/Board'
 
 export default {
   name: 'App',
   components: {
-    Board
   },
   data () {
     return {

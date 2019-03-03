@@ -9,7 +9,7 @@ export default new Vuex.Store({
     resources: [],
     loading: false,
     error: false,
-    histories: null,
+    histories: {},
   },
   getters: {
     getResByName: (state) => (name) =>{
@@ -23,7 +23,7 @@ export default new Vuex.Store({
         for (let resource of state.resources ) {
           // eslint-disable-next-line
           // console.log(resource['show_details'])
-          // init of local attr
+          // initiate local attr
           if (resource['show_details'] === undefined) {
             Vue.set(resource, 'show_details', false)
             Vue.set(resource, 'edit_dialog', false)
@@ -36,7 +36,7 @@ export default new Vuex.Store({
           }
         }
         // eslint-disable-next-line
-        console.log(board)
+        // console.log("[DEBUG] getters.loadedBoard:\n\t" + board)
         return board
       } else {
         return null
@@ -46,15 +46,19 @@ export default new Vuex.Store({
       return state.loading
     },
     getHistoryByName: (state) => (name) =>{
-      return state.histories[name]
+      if (state.histories === null) {
+        return {}
+      } else {
+        return state.histories[name]
+      }
     }
   },
   mutations: {
     setResources (state, payload) {
-      //someArray.splice(start, deleteCount, item1, item2, ...)
-      state.resources.splice(0, 0, ...JSON.parse(payload))
+      // someArray.splice(start, deleteCount, item1, item2, ...)
+      state.resources.splice(0, state.resources.length, ...JSON.parse(payload))
       // eslint-disable-next-line
-      // console.log(state.resources)
+      // console.log("[DEBUG] setResources: " + state.resources)
     },
     setHistory (state, payload) {
       let parsedPayload = JSON.parse(payload)
@@ -63,16 +67,16 @@ export default new Vuex.Store({
     },
     updateResource (state, payload) {
       // eslint-disable-next-line
-      console.log('[DEBUG] updateResource: ' + payload)
+      console.log('[DEBUG] updateResource payload:\n\t' + payload)
       let updated_resource = JSON.parse(payload)
       for (let [index, resource] of state.resources.entries() ) {
         if (resource.name === updated_resource.name) {
           // eslint-disable-next-line
-          console.log('[DEBUG] before mutation:' + state.resources[index].state)
+          console.log('[DEBUG] updateResource before mutation:\n\t' + state.resources[index].state)
           //state.resources[index] = updated_resource
           state.resources.splice(index, 1, updated_resource)
           // eslint-disable-next-line
-          console.log('[DEBUG] after: mutation:' + state.resources[index].state)
+          console.log('[DEBUG] updateResource after: mutation:\n\t' + state.resources[index].state)
         }
       }
       // eslint-disable-next-line
@@ -86,7 +90,7 @@ export default new Vuex.Store({
     // eslint-disable-next-line
     SOCKET_updateResource ({commit}, params) {
       // eslint-disable-next-line
-      console.log('SOCKET_updateResource: ' + params)
+      console.log('[DEBUG] SOCKET_updateResource:\n\t' + params)
       // update_board from socket.io server
       commit('updateResource', params)
     },
@@ -96,6 +100,9 @@ export default new Vuex.Store({
       // context.commit is the callback passed to client.getResources
       client.getResources(commit)
       commit('changeLoadingState', false)
+    },
+    getHistory ({commit}, name) {
+      client.getHistory(name, commit)
     }
   }
 })
