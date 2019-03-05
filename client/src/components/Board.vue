@@ -183,6 +183,9 @@
       },
       loadingDialog: false,
       valid: false,
+      usedBy: '',
+      newState: '',
+      note: '',
       nameRules: [
         v => !!v || 'Newly used-by name is required',
         v => v.length <= 25 || 'Name must be less than 25 characters'

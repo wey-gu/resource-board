@@ -20,9 +20,7 @@
 
     <v-content>
       <keep-alive>
-        <transition>
-          <router-view></router-view>
-        </transition>
+        <router-view></router-view>
       </keep-alive>
     </v-content>
   </v-app>
