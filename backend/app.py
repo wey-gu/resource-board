@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from flask_socketio import emit
-from mock_data import db_mock_resources, db_index_hash, \
+from mock_data.data import db_mock_resources, db_index_hash, \
   db_mock_resource_history
 import json
 import datetime
