@@ -221,7 +221,7 @@
         let params = {
           "name": resName,
           "used_by": this.usedBy,
-          "state": this.newState,
+          "state_name": this.newState,
           "note": this.note,
         }
         this.$socket.emit('update resource', params)

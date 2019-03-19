@@ -54,18 +54,18 @@
 
     <v-timeline v-if="!this.noHistoryError">
       <v-timeline-item
-        :color="config_style[record['state']] + ' lighten-1'"
+        :color="config_style[record['state_name']] + ' lighten-1'"
         fill-dot
         v-for="record in this.history" :key="record['last_changed_at']"
       >
         <v-card>
-          <v-card-title :class="config_style[record['state']] + ' lighten-1'">
+          <v-card-title :class="config_style[record['state_name']] + ' lighten-1'">
             <h2 class="subheading white--text font-weight-light">{{ record['last_changed_at'] | timeFormatFull }}</h2>
           </v-card-title>
           <v-container>
             <v-layout wrap column>
               <v-flex xs8 pb-2>
-                <v-chip color="purple lighten-1" text-color="white">{{ record['state'] }}</v-chip>
+                <v-chip color="purple lighten-1" text-color="white">{{ record['state_name'] }}</v-chip>
                   <v-chip v-if="record['used_by'] !== ''" >
                   <v-avatar class="teal lighten-2">by</v-avatar>
                   {{ record['used_by'] }}
