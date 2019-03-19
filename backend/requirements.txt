@@ -6,3 +6,7 @@ eventlet
 redis
 kombu
 flask-migrate
+flask-sqlalchemy
+marshmallow-sqlalchemy
+flask-marshmallow
+python-dotenv

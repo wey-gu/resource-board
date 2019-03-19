@@ -27,19 +27,8 @@
         <type label="BLOB" length="1" sql="sa.Binary" quote="'"/>
         <type label="Pickle" length="0" sql="sa.PickleType" quote=""/>
     </group>
-</datatypes><table x="10" y="10" name="users">
-<row name="id" null="1" autoincrement="1">
-<datatype>sa.Integer</datatype>
-<default>NULL</default></row>
-<row name="name" null="1" autoincrement="0">
-<datatype>sa.String</datatype>
-<default>NULL</default></row>
-<key type="PRIMARY" name="">
-<part>id</part>
-</key>
-</table>
-<table x="118" y="10" name="resources">
-<row name="id" null="1" autoincrement="1">
+</datatypes><table x="323" y="265" name="resources">
+<row name="resource_id" null="1" autoincrement="1">
 <datatype>sa.Integer</datatype>
 <default>NULL</default></row>
 <row name="name" null="1" autoincrement="0">
@@ -51,48 +40,68 @@
 <row name="note" null="1" autoincrement="0">
 <datatype>sa.String</datatype>
 <default>NULL</default></row>
-<row name="is_ha" null="1" autoincrement="0">
+<row name="high_availability" null="1" autoincrement="0">
 <datatype>sa.Boolean</datatype>
 <default>NULL</default></row>
 <row name="hardware_type" null="1" autoincrement="0">
 <datatype>sa.String</datatype>
 <default>NULL</default></row>
-<row name="changed_at" null="1" autoincrement="0">
+<row name="last_changed_at" null="1" autoincrement="0">
 <datatype>sa.DateTime</datatype>
 <default>NULL</default></row>
-<row name="changed_by_user_id" null="1" autoincrement="0">
+<row name="last_changed_by" null="1" autoincrement="0">
+<datatype>sa.Integer</datatype>
+<default>NULL</default><relation table="users" row="user_id" />
+</row>
+<row name="state_id" null="1" autoincrement="0">
+<datatype>sa.Integer</datatype>
+<default>NULL</default><relation table="states" row="state_id" />
+</row>
+<row name="storage_backend" null="1" autoincrement="0">
 <datatype>sa.String</datatype>
 <default>NULL</default></row>
-<row name="state_id" null="1" autoincrement="0">
+<row name="used_by" null="1" autoincrement="0">
 <datatype>sa.String</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>id</part>
+<part>resource_id</part>
 </key>
 </table>
-<table x="278" y="10" name="states">
-<row name="id" null="1" autoincrement="1">
+<table x="147" y="271" name="users">
+<row name="user_id" null="1" autoincrement="1">
 <datatype>sa.Integer</datatype>
 <default>NULL</default></row>
 <row name="name" null="1" autoincrement="0">
 <datatype>sa.String</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>id</part>
+<part>user_id</part>
 </key>
 </table>
-<table x="390" y="10" name="resource_record">
-<row name="id" null="1" autoincrement="1">
+<table x="550" y="274" name="resource_record">
+<row name="record_id" null="1" autoincrement="1">
 <datatype>sa.Integer</datatype>
 <default>NULL</default></row>
-<row name="res_id" null="1" autoincrement="0">
+<row name="resource_id" null="1" autoincrement="0">
 <datatype>sa.Integer</datatype>
-<default>NULL</default></row>
+<default>NULL</default><relation table="resources" row="resource_id" />
+</row>
 <row name="record" null="1" autoincrement="0">
 <datatype>sa.String</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>id</part>
+<part>record_id</part>
+</key>
+</table>
+<table x="552" y="413" name="states">
+<row name="state_id" null="1" autoincrement="1">
+<datatype>sa.Integer</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>sa.String</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>state_id</part>
 </key>
 </table>
 </sql>
