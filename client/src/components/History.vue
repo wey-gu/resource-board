@@ -98,7 +98,7 @@
       }
     }),
     watch: {
-      '$route' (from, to) {
+      '$route' () {
         this.$store.dispatch('getHistory', this.$route.params.name)
       }
     },

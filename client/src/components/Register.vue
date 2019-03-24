@@ -32,8 +32,6 @@
 </template>
 
 <script>
-  import { mapGetters } from 'vuex'
-
   export default {
     data: () => ({
       username: '',
@@ -49,7 +47,7 @@
         if (!val) return
         setTimeout(() => (this.loadingDialog = false), 4000)
       },
-      '$route' (from, to) {
+      '$route' () {
         this.$store.dispatch('getHistory', this.$route.params.name)
       }
     },
