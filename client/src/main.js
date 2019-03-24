@@ -6,6 +6,8 @@ import store from './store'
 import VueRouter from 'vue-router'
 import Board from './components/Board'
 import History from './components/History'
+import Login from './components/Login'
+import Register from './components/Register'
 import moment from 'moment-timezone'
 
 Vue.config.productionTip = false
@@ -22,7 +24,9 @@ Vue.use(new VueSocketIO({
 
 const routes = [
   { path: '/', component: Board },
-  { path: '/resource/:name/history', component: History }
+  { path: '/resource/:name/history', component: History },
+  { path: '/login', component: Login },
+  { path: '/register', component: Register }
 ]
 
 const router = new VueRouter({

@@ -8,10 +8,21 @@ export default new Vuex.Store({
   state: {
     resources: [],
     loading: false,
-    error: false,
     histories: {},
+    loginInfo: {
+      loggedIn: false,
+      userName: ''
+    },
+    alert: {
+      type: 'info',
+      msg: '',
+      dismissed: true
+    }
   },
   getters: {
+    alertVisiable: (state) => {
+      return (state.alert.dismissed !== true)
+    },
     getResByName: (state) => (name) =>{
       return state.resources(res => res.name === name)
     },
@@ -36,7 +47,7 @@ export default new Vuex.Store({
           }
         }
         // eslint-disable-next-line
-        // console.log("[DEBUG] getters.loadedBoard:\n\t" + board)
+        // console.log('[DEBUG] getters.loadedBoard:\n\t' + board)
         return board
       } else {
         return null
@@ -44,6 +55,9 @@ export default new Vuex.Store({
     },
     getLoading: (state) => {
       return state.loading
+    },
+    getAlert: (state) => {
+      return state.alert
     },
     getHistoryByName: (state) => (name) =>{
       if (state.histories === null) {
@@ -54,11 +68,23 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    alerting (state, data) {
+      let dismissed = data['dismissed']
+      if (dismissed !== true) {
+        Vue.set(state.alert, 'type', data['type'])
+        Vue.set(state.alert, 'msg', data['msg'])
+        Vue.set(state.alert, 'dismissed', false)
+        // eslint-disable-next-line
+        console.log('[DEBUG] mutation alerting:\n\t' + state.alert.dismissed)
+      } else {
+        Vue.set(state.alert, 'dismissed', true)
+      }
+    },
     setResources (state, payload) {
       // someArray.splice(start, deleteCount, item1, item2, ...)
       state.resources.splice(0, state.resources.length, ...JSON.parse(payload))
       // eslint-disable-next-line
-      // console.log("[DEBUG] setResources: " + state.resources)
+      // console.log('[DEBUG] setResources: ' + state.resources)
     },
     setHistory (state, payload) {
       let parsedPayload = JSON.parse(payload)
@@ -85,6 +111,14 @@ export default new Vuex.Store({
     changeLoadingState (state, ifLoading) {
       state.loading = ifLoading
     },
+    login (state, response) {
+      Vue.set(state.loginInfo, 'loggedIn', response.success)
+      Vue.set(state.loginInfo, 'userName', response.user)
+    },
+    logout (state) {
+      Vue.set(state.loginInfo, 'loggedIn', false)
+      Vue.set(state.loginInfo, 'userName', '')
+    },
   },
   actions: {
     // eslint-disable-next-line
@@ -93,6 +127,48 @@ export default new Vuex.Store({
       console.log('[DEBUG] SOCKET_updateResource:\n\t' + params)
       // update_board from socket.io server
       commit('updateResource', params)
+    },
+    SOCKET_loginResponse ( {commit}, response) {
+      // eslint-disable-next-line
+      console.log('[DEBUG] SOCKET_loginResponse:\n\t' + response)
+      let resp = JSON.parse(response)
+      if (resp.success === true) {
+        commit('login', resp)
+      } else {
+        let data = {
+          type: resp.alert_type,
+          msg: resp.alert_msg,
+          dismissed: false
+        }
+      commit('alerting', data)
+      }
+    },
+    SOCKET_logoutResponse ( {commit}, response) {
+      // eslint-disable-next-line
+      console.log('[DEBUG] SOCKET_logoutResponse:\n\t' + response)
+      let resp = JSON.parse(response)
+      if (resp.success === true) {
+        commit('logout')
+      } else {
+        let data = {
+          type: resp.alert_type,
+          msg: resp.alert_msg,
+          dismissed: false
+        }
+      commit('alerting', data)
+      }
+    },
+    SOCKET_registerResponse ( {commit}, response) {
+      // eslint-disable-next-line
+      console.log('[DEBUG] SOCKET_registerResponse:\n\t' + response)
+      let resp = JSON.parse(response)
+      let data = {
+          type: resp.alert_type,
+          msg: resp.alert_msg,
+          dismissed: false
+      }
+      commit('login', resp)
+      commit('alerting', data)
     },
     getBoard ({commit}) {
       // initially fetch Board from backend

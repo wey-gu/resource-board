@@ -48,10 +48,11 @@
                   <v-card-actions>
 
                       <v-dialog v-model="resource.edit_dialog" persistent max-width="600px">
-                        <v-btn slot="activator" flat v-if="!resource.show_details" >Edit</v-btn>
+                        <v-btn slot="activator" flat v-if="!resource.show_details">Edit</v-btn>
                         <v-card >
                           <v-card-title>
-                            <span class="headline secondary--text font-weight-light">Edit</span>
+                            <span class="headline secondary--text font-weight-light" v-if="loginInfo.loggedIn">Edit</span>
+                            <span class="headline secondary--text font-weight-light" v-if="!loginInfo.loggedIn">Please login to edit</span>
                             <v-spacer></v-spacer>
                             <span class="headline ">{{ resource.name }}</span>
                           </v-card-title>
@@ -107,7 +108,7 @@
                               flat
                               :loading="loadingDialog"
                               @click="commitResEdit(resource.name)"
-                              :disabled="valid === false"
+                              :disabled="valid === false || !loginInfo.loggedIn"
                             >
                               Commit
                             </v-btn>
@@ -171,7 +172,7 @@
 </template>
 
 <script>
-  import { mapGetters, mapMutations } from 'vuex'
+  import { mapState, mapGetters, mapMutations } from 'vuex'
 
   export default {
     data: () => ({
@@ -202,6 +203,9 @@
     },
     computed: {
       // `this.loadedBoard()` as `this.$store.getters('loadedBoard')`
+      ...mapState([
+        'loginInfo',
+      ]),
       ...mapGetters([
         'loadedBoard',
         'getLoading'

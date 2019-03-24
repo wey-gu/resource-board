@@ -2,10 +2,10 @@
   <v-container>
     <v-flex xs-8>
       <v-container>
-        <v-flex md-12 >
-          <span class="title font-weight-light">Historical changes of </span>
-          <span class="title font-weight-regular">{{ this.resourceName }}</span>
-        </v-flex>
+          <v-flex md-12>
+            <span class="title font-weight-light">Historical changes of </span>
+            <span class="title font-weight-regular">{{ this.resourceName }}</span>
+          </v-flex>
       </v-container>
     </v-flex>
     <v-container v-if="this.noHistoryError" >
