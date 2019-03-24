@@ -10,3 +10,4 @@ flask-sqlalchemy
 marshmallow-sqlalchemy
 flask-marshmallow
 python-dotenv
+flask-login

@@ -4,20 +4,23 @@ resource app
 """
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_socketio import SocketIO
-from flask_socketio import emit
-from flask_sqlalchemy import SQLAlchemy
+from flask_login import current_user, login_user, logout_user, LoginManager
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
+from flask_socketio import SocketIO
+from flask_socketio import emit, disconnect
+from flask_sqlalchemy import SQLAlchemy
 from config import Config
-import json
 import datetime
+import functools
+import json
 
 # instantiate all utils
 db = SQLAlchemy()
 migrate = Migrate()
 socketio = SocketIO()
 ma = Marshmallow()
+login = LoginManager()
 
 
 # use app factory to enable app instantication for different purposes
@@ -30,9 +33,23 @@ def create_instance(config=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
+    login.init_app(app)
 
-    # frontend debug mock db initilization
-    if app.config['DEBUG_FRONTEND']:
+    @login.user_loader
+    def load_user(user_id):
+        return models.Users.query.filter_by(id=user_id).first()
+
+    def authenticated_only(f):
+        @functools.wraps(f)
+        def wrapped(*args, **kwargs):
+            if not current_user.is_authenticated:
+                disconnect()
+            else:
+                return f(*args, **kwargs)
+        return wrapped
+
+    # frontend debug mock or test: db initilization
+    if app.config['DEBUG_FRONTEND'] or app.config['TEST']:
         from mock_data.data import mock_resources, \
             mock_users, mock_states, \
             mock_resource_records
@@ -137,9 +154,72 @@ def create_instance(config=Config):
 
     # socketio server handle events as below
     @socketio.on('update resource')
+    @authenticated_only
     def update_resource_server(res):
         updated_res = modify_resource(app.config, res)
-        emit('updateResource', (updated_res), broadcast=True)
+        emit('updateResource', updated_res, broadcast=True)
+
+    @socketio.on('login user')
+    def login_usr(loginData):
+        name, passwd = loginData['username'], loginData['passwd']
+        user = models.Users.query.filter_by(name=name).first()
+        if user is None or not user.check_password(passwd):
+            response = {
+                "success": False,
+                "alert_type": "error",
+                "alert_msg": "User not exist or invalid used password!"
+                }
+        else:
+            login_user(user)
+            response = {
+                "success": True,
+                "user": name
+                }
+        emit('loginResponse', json.dumps(response))
+
+    @socketio.on('register user')
+    def register_usr(registerData):
+        name, passwd = registerData['username'], registerData['passwd']
+        newuser = models.Users(name=name)
+        newuser.set_password(password=passwd)
+        db.session.add(newuser)
+        db.session.commit()
+        user = models.Users.query.filter_by(name=name).first()
+        if user is None or not user.check_password(passwd):
+            response = {
+                "success": False,
+                "alert_type": "error",
+                "alert_msg": "Register Failed!"
+                }
+        else:
+            login_user(newuser)
+            response = {
+                "success": True,
+                "user": name,
+                "alert_type": "success",
+                "alert_msg": "Register Succeeded and it was logged in!"
+                }
+        emit('registerResponse', json.dumps(response))
+
+    @socketio.on('logout user')
+    @authenticated_only
+    def logout_usr():
+        try:
+            logout_user()
+        except:
+            response = {
+                "success": False,
+                "alert_type": "error",
+                "alert_msg": "Logout Failed!"
+                }
+        else:
+            response = {
+                "success": True,
+                "alert_type": "success",
+                "alert_msg": "Logout Succeeded!"
+            }
+        finally:
+            emit('logoutResponse', json.dumps(response))
 
     return app
 
