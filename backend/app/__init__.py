@@ -50,23 +50,8 @@ def create_instance(config=Config):
 
     # frontend debug mock or test: db initilization
     if app.config['DEBUG_FRONTEND'] or app.config['TEST']:
-        from mock_data.data import mock_resources, \
-            mock_users, mock_states, \
-            mock_resource_records
-        from mock_data.utils import insert_mockdata_to_db
-
-        app_context = app.app_context()
-        # cleanup and initiate the mocking db
-        app_context.push()
-        db.drop_all()
-        db.create_all()
-        insert_mockdata_to_db(
-            db,
-            mock_resources,
-            mock_users,
-            mock_states,
-            mock_resource_records
-        )
+        from mock_data.utils import build_mockdb
+        build_mockdb(app, db)
 
     # socketio instantiation
     socketio.init_app(app)

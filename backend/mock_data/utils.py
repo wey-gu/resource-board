@@ -1,8 +1,10 @@
 #!/bin/env python
 from app.models import Resources, Users, States, Resource_records
-from mock_data.data import mock_resources
-from datetime import datetime
 from copy import deepcopy
+from datetime import datetime
+from mock_data.data import mock_resources, \
+    mock_users, mock_states, \
+    mock_resource_records
 
 
 def insert_mockdata_to_db(
@@ -34,3 +36,19 @@ hash_name_to_index = {}
 
 for index, item in enumerate(mock_resources):
     hash_name_to_index[item['name']] = index
+
+
+def build_mockdb(app, db):
+    """ build mocking db for test """
+    app_context = app.app_context()
+    # cleanup and initiate the mocking db
+    app_context.push()
+    db.drop_all()
+    db.create_all()
+    insert_mockdata_to_db(
+        db,
+        mock_resources,
+        mock_users,
+        mock_states,
+        mock_resource_records
+    )
