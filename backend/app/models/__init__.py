@@ -34,9 +34,9 @@ class Resources(db.Model):
     storage_backend = db.Column(db.String)
     hardware_type = db.Column(db.String)
     last_changed_at = db.Column(db.DateTime)
-    last_changed_by = db.Column(db.Integer, db.ForeignKey("users.id"))
+    last_changed_by = db.Column(db.String)
     state_name = db.Column(
-        db.Integer, db.ForeignKey("states.name"), nullable=False)
+        db.String, db.ForeignKey("states.name"), nullable=False)
     used_by = db.Column(db.String)
 
     def __repr__(self):
@@ -73,7 +73,7 @@ class ResourcesSchema(ma.ModelSchema):
 
 class Resource_records(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    res_name = db.Column(db.Integer, db.ForeignKey("resources.name"))
+    res_name = db.Column(db.String, db.ForeignKey("resources.name"))
     record = db.Column(db.String)
 
     def __repr__(self):

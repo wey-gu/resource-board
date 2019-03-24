@@ -14,3 +14,4 @@ class Config(object):
     DEBUG = os.environ.get('DEBUG') or False
     DEBUG_FRONTEND = os.environ.get('DEBUG_FRONTEND') or False
     HISTORY_ENTRIES_MAX = 50
+    TEST = os.environ.get('TEST') or False

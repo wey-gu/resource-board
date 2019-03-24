@@ -75,8 +75,6 @@ def create_instance(config=Config):
     CORS(app)
 
     def get_resources(config):
-        # if config['DEBUG_FRONTEND']:
-        #     return json.dumps(mock_resources)
         resources_schema = models.ResourcesSchema(many=True)
         resource = models.Resources.query.all()
         resources = json.dumps(resources_schema.dump(resource).data)
@@ -102,16 +100,12 @@ def create_instance(config=Config):
                 setattr(resource, factor, res[factor])
             timestamp = datetime.datetime.utcnow()
             timestampString = str(timestamp)
-            if not config['DEBUG_FRONTEND']:
+            if not (config['DEBUG_FRONTEND'] or config['TEST']):
                 timestamp = timestampString
             # update database resource
             setattr(resource, timestamp_factor, timestamp)
+            setattr(resource, 'last_changed_by', current_user.name)
 
-            ''' mock data
-            mock_resource_history[res['name']].append(
-                {factor: resource[factor] for factor in record_factors}
-            )
-            '''
             # print(str(mock_resource_history))
             record = {
                 factor:
