@@ -82,6 +82,19 @@ resources = '''
     "id": 6
   },
   {
+    "name":"DC214",
+    "scale":7,
+    "note":"",
+    "high_availability":true,
+    "storage_backend":"SIO",
+    "hardware_type":"HP",
+    "last_changed_at":"2019-02-23 00:34",
+    "last_changed_by":"0",
+    "used_by":"",
+    "state_name":"occupied",
+    "id": 7
+  },
+  {
     "name":"DC026",
     "scale":6,
     "note":"",
@@ -92,7 +105,7 @@ resources = '''
     "last_changed_by":"0",
     "used_by":"",
     "state_name":"free",
-    "id": 7
+    "id": 8
   }
 ]
 '''
