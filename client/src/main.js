@@ -9,12 +9,13 @@ import History from './components/History'
 import Login from './components/Login'
 import Register from './components/Register'
 import moment from 'moment-timezone'
+import config from './config'
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
 Vue.use(new VueSocketIO({
   debug: true,
-  connection: 'http://dc.siwei.info:5000',
+  connection: config.backendURL,
   vuex: {
       store,
       actionPrefix: 'SOCKET_',

@@ -1,8 +1,9 @@
 import axios from 'axios'
+import config from '../config'
 
 export default {
     getResources (commitCallback) {
-      const URL = 'http://dc.siwei.info:5000/resources'
+      const URL = config.backendURL + '/resources'
       axios.get(URL)
         .then((response) => {
           commitCallback('setResources', response.data)
@@ -13,7 +14,7 @@ export default {
         })
     },
     getHistory (resName, commitCallback) {
-      const URL = 'http://dc.siwei.info:5000/resource/' + resName + '/history'
+      const URL = config.backendURL + '/resource/' + resName + '/history'
       axios.get(URL)
         .then((response) => {
           commitCallback('setHistory', response.data)
