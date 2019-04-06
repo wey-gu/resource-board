@@ -4,7 +4,9 @@
 
 ## arch digram
 
-> Arch designed as below
+
+
+> Arch designed as below, which is inspired by [Flack](https://github.com/miguelgrinberg/flack)
 
 ![Arch digram](https://note.siwei.info/project-resource-board-a-scalable-webapp-with-flask-socketio-and-vue-js/arch_diagram_0.png)
 
@@ -38,7 +40,7 @@ npm run build
 
 ## backend
 
-> RESTful and SocketIO server createy with Flask-Socket.IO .
+> RESTful and SocketIO server created with Flask-Socket.IO .
 
 ```bash
 cp backend/.env-example backend/.env
