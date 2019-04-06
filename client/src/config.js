@@ -1,4 +1,4 @@
-const DEBUG = true
+const DEBUG = false
 let backendURL = 'http://localhost:5000'
 if (!DEBUG) {
     backendURL = 'https://dc.siwei.info:5000'
