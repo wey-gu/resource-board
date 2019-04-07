@@ -1,4 +1,18 @@
-# client
+# resource board web client
+
+## Screen shots
+
+> board
+
+![scren_shot_0](./screenshots/screen_shot_0.png)
+
+> history
+
+![scren_shot_1](./screenshots/screen_shot_1.png)
+
+> edit
+
+![scren_shot_2](./screenshots/screen_shot_2.png)
 
 ## Project setup
 ```
