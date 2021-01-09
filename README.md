@@ -1,3 +1,5 @@
+> 
+>
 > referring to blog on this project: <https://note.siwei.info/project-resource-board-a-scalable-webapp-with-flask-socketio-and-vue-js/>
 
 
@@ -16,6 +18,8 @@
 
 Created with `Balsamiq Mockups`, an animation was created [here](https://note.siwei.info/project-resource-board-a-scalable-webapp-with-flask-socketio-and-vue-js/demo-board-history.mp4) as well :-) .
 
+![resource_board_prototype](prototype/resource_board_prototype.gif)
+
 ```bash
 resource-board ❯ tree prototype
 prototype
@@ -29,6 +33,22 @@ prototype
 ## web-client
 
 > Single-page web client created with Vue.js .
+
+Board Portal Page:
+
+![screen_shot_0](client/screenshots/screen_shot_0.png)
+
+Resource History Page:
+
+![screen_shot_1](client/screenshots/screen_shot_1.png)
+
+Resource Edit Card:
+
+![screen_shot_1](client/screenshots/screen_shot_2.png)
+
+Demo screen capture:
+
+![screen_shot_1](client/screenshots/resource_board_demo.gif)
 
 ```bash
 cd client
